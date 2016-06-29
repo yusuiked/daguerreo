@@ -52,6 +52,7 @@ dependencies {
   compileOnly 'org.projectlombok:lombok:1.16.6'
   compile 'org.springframework.boot:spring-boot-starter-web'
   runtime 'com.h2database:h2'
+  runtime 'org.flywaydb:flyway-core'
   testCompile 'org.springframework.boot:spring-boot-starter-test'
 }
 
