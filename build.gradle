@@ -1,0 +1,63 @@
+buildscript {
+  ext {
+    javaVersion = JavaVersion.VERSION_1_8
+    springBootVersion = '1.3.5.RELEASE'
+  }
+  repositories {
+    mavenCentral()
+  }
+  dependencies {
+    classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+  }
+}
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'eclipse'
+apply plugin: 'spring-boot'
+
+description = 'Root project of daguerreo.'
+targetCompatibility = sourceCompatibility = javaVersion
+tasks.withType(AbstractCompile)*.options*.encoding = 'UTF-8'
+
+jar {
+  baseName = 'daguerreo'
+  version = '0.0.1-SNAPSHOT'
+}
+
+repositories {
+  mavenCentral()
+}
+
+
+dependencies {
+  compile('org.springframework.boot:spring-boot-devtools')
+  compile('org.springframework.boot:spring-boot-starter-jooq')
+  compile('org.projectlombok:lombok:1.16.6')
+  compile('org.springframework.boot:spring-boot-starter-web')
+  runtime('com.h2database:h2')
+  testCompile('org.springframework.boot:spring-boot-starter-test')
+}
+
+idea {
+  project {
+    // See: https://docs.gradle.org/current/dsl/org.gradle.plugins.ide.idea.model.IdeaProject.html
+    jdkName = javaVersion
+    languageLevel = javaVersion
+    vcs = 'Git'
+  }
+  module {
+    // See: https://docs.gradle.org/current/dsl/org.gradle.plugins.ide.idea.model.IdeaModule.html
+    downloadJavadoc = true
+    downloadSources = true
+  }
+}
+
+eclipse {
+  classpath {
+    containers.remove('org.eclipse.jdt.launching.JRE_CONTAINER')
+    containers 'org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8'
+    downloadJavadoc = true
+    downloadSources = true
+  }
+}
