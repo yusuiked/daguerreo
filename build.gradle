@@ -23,14 +23,17 @@ buildscript {
     mavenCentral()
   }
   dependencies {
-    classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
+    classpath 'org.flywaydb:flyway-gradle-plugin:3.2.1'
   }
 }
 
+// TODO will be changes to plugins block notation below.
 apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'eclipse'
 apply plugin: 'spring-boot'
+apply plugin: 'org.flywaydb.flyway'
 
 description = 'Root project of daguerreo.'
 targetCompatibility = sourceCompatibility = javaVersion
@@ -77,4 +80,9 @@ eclipse {
     downloadJavadoc = true
     downloadSources = true
   }
+}
+
+flyway {
+  url = 'jdbc:h2:file:/tmp/daguerreo'
+  user = 'sa'
 }
