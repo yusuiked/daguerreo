@@ -14,15 +14,21 @@
  * limitations under the License.
  */
 
-package com.example;
+package org.yukung.daguerreo;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
 
-@SpringBootApplication
-public class DemoApplication {
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringApplicationConfiguration(classes = Application.class)
+@WebAppConfiguration
+public class ApplicationTests {
 
-    public static void main(String[] args) {
-        SpringApplication.run(DemoApplication.class, args);
+    @Test
+    public void contextLoads() {
     }
+
 }
