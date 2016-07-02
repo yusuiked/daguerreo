@@ -39,15 +39,18 @@ description = 'Root project of daguerreo.'
 targetCompatibility = sourceCompatibility = javaVersion
 tasks.withType(AbstractCompile)*.options*.encoding = 'UTF-8'
 
-jar {
-  baseName = 'daguerreo'
-  version = '0.0.1-SNAPSHOT'
+sourceSets {
+  generated {
+    compileClasspath += configurations.compile
+  }
+  // TODO runtimeClasspath is also necessary?
+  main.compileClasspath += generated.output
+  test.compileClasspath += generated.output
 }
 
 repositories {
   mavenCentral()
 }
-
 
 dependencies {
   compile 'org.springframework.boot:spring-boot-devtools'
@@ -59,6 +62,11 @@ dependencies {
   testCompile 'org.springframework.boot:spring-boot-starter-test'
 }
 
+jar {
+  baseName = 'daguerreo'
+  version = '0.0.1-SNAPSHOT'
+}
+
 idea {
   project {
     // See: https://docs.gradle.org/current/dsl/org.gradle.plugins.ide.idea.model.IdeaProject.html
@@ -68,6 +76,7 @@ idea {
   }
   module {
     // See: https://docs.gradle.org/current/dsl/org.gradle.plugins.ide.idea.model.IdeaModule.html
+    generatedSourceDirs += sourceSets.generated.java.srcDirs
     downloadJavadoc = true
     downloadSources = true
   }

@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/daguerreo.iml" filepath="$PROJECT_DIR$/.idea/modules/daguerreo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/daguerreo_generated.iml" filepath="$PROJECT_DIR$/.idea/modules/daguerreo_generated.iml" group="daguerreo" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/daguerreo_main.iml" filepath="$PROJECT_DIR$/.idea/modules/daguerreo_main.iml" group="daguerreo" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/daguerreo_test.iml" filepath="$PROJECT_DIR$/.idea/modules/daguerreo_test.iml" group="daguerreo" />
     </modules>

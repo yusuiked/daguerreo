@@ -19,6 +19,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="daguerreo_generated" target="1.8" />
       <module name="daguerreo_main" target="1.8" />
       <module name="daguerreo_test" target="1.8" />
     </bytecodeTargetLevel>
