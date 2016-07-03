@@ -61,11 +61,13 @@ repositories {
 dependencies {
   compile 'org.springframework.boot:spring-boot-devtools'
   compile 'org.springframework.boot:spring-boot-starter-jooq'
-  compileOnly 'org.projectlombok:lombok:1.16.6'
   compile 'org.springframework.boot:spring-boot-starter-web'
+  compile 'org.springframework.data:spring-data-commons'
+  compileOnly 'org.projectlombok:lombok:1.16.6'
   runtime 'com.h2database:h2'
   runtime 'org.flywaydb:flyway-core'
   testCompile 'org.springframework.boot:spring-boot-starter-test'
+  testCompile 'org.assertj:assertj-core:3.4.1'
 }
 
 jar {
