@@ -16,21 +16,35 @@
 
 package org.yukung.daguerreo.domain.repository;
 
+import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.Field;
+import org.jooq.Record;
 import org.jooq.RecordMapper;
+import org.jooq.SelectQuery;
+import org.jooq.SortField;
 import org.jooq.Table;
+import org.jooq.UniqueKey;
 import org.jooq.UpdatableRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.util.Assert;
 import org.yukung.daguerreo.domain.entity.Identifiable;
 
 import javax.annotation.PostConstruct;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+
+import static com.google.common.base.CaseFormat.*;
+import static org.jooq.impl.DSL.*;
 
 /**
  * Repository base implementation for jOOQ.
@@ -100,7 +114,10 @@ public abstract class BasicJooqRepository<R extends UpdatableRecord<R>, T extend
      */
     @Override
     public List<E> findAll() {
-        return null;
+        return dsl
+            .selectFrom(table)
+            .fetch()
+            .map(mapper());
     }
 
     /**
@@ -108,7 +125,22 @@ public abstract class BasicJooqRepository<R extends UpdatableRecord<R>, T extend
      */
     @Override
     public List<E> findAll(Iterable<ID> ids) {
-        return null;
+        if (ids == null) {
+            return Collections.emptyList();
+        }
+        Field<?>[] pk = pk();
+        List<ID> keys = new ArrayList<>();
+        ids.forEach(keys::add);
+
+        List<E> result = new ArrayList<>();
+        if (pk != null) {
+            result = dsl
+                .selectFrom(table)
+                .where(in(pk, keys))
+                .fetch()
+                .map(mapper());
+        }
+        return result;
     }
 
     /**
@@ -116,7 +148,9 @@ public abstract class BasicJooqRepository<R extends UpdatableRecord<R>, T extend
      */
     @Override
     public List<E> findAll(Sort sort) {
-        return null;
+        // TODO Throw exception if the index of the specified columns does not exist.
+        SelectQuery<R> query = getQuery(sort);
+        return query.fetch().map(mapper());
     }
 
     /**
@@ -124,7 +158,11 @@ public abstract class BasicJooqRepository<R extends UpdatableRecord<R>, T extend
      */
     @Override
     public Page<E> findAll(Pageable pageable) {
-        return null;
+        if (pageable == null) {
+            return new PageImpl<>(findAll());
+        }
+        SelectQuery<R> query = getQuery(pageable);
+        return new PageImpl<>(query.fetch().map(mapper()), pageable, count());
     }
 
     /**
@@ -132,7 +170,16 @@ public abstract class BasicJooqRepository<R extends UpdatableRecord<R>, T extend
      */
     @Override
     public E findOne(ID id) {
-        return null;
+        Field<?>[] pk = pk();
+        R record = null;
+
+        if (pk != null) {
+            record = dsl
+                .selectFrom(table)
+                .where(equal(pk, id))
+                .fetchOne();
+        }
+        return record == null ? null : mapper().map(record);
     }
 
     /**
@@ -140,7 +187,13 @@ public abstract class BasicJooqRepository<R extends UpdatableRecord<R>, T extend
      */
     @Override
     public boolean exists(ID id) {
-        return false;
+        Field<?>[] pk = pk();
+
+        return pk != null && dsl
+            .selectCount()
+            .from(table)
+            .where(equal(pk, id))
+            .fetchOne(0, Integer.class) > 0;
     }
 
     /**
@@ -148,7 +201,10 @@ public abstract class BasicJooqRepository<R extends UpdatableRecord<R>, T extend
      */
     @Override
     public long count() {
-        return 0;
+        return dsl
+            .selectCount()
+            .from(table)
+            .fetchOne(0, Long.class);
     }
 
     /**
@@ -156,15 +212,42 @@ public abstract class BasicJooqRepository<R extends UpdatableRecord<R>, T extend
      */
     @Override
     public <S extends E> S save(S entity) {
-        return null;
+        Assert.notNull(entity);
+        R record;
+
+        if (getId(entity) == null) {
+            record = dsl.newRecord(table, entity);
+        } else {
+            R fetched = fetchById(getId(entity));
+            if (fetched != null) {
+                fetched.from(entity);
+                record = fetched;
+            } else {
+                record = dsl.newRecord(table, entity);
+            }
+        }
+        // TODO 楽観的ロックでかち合った時に DataChangedException 拾って refresh() とリトライ
+        record.store();
+        return record.into(entity);
     }
 
     /**
      * {@inheritDoc}
+     * <p>
+     *     NOTE: Please note that the case of large number of entity to be saved which is becomes very slowly.
+     *     Because in the inside are calling the save() in the loop.
+     * </p>
      */
     @Override
     public <S extends E> Iterable<S> save(Iterable<S> entities) {
-        return null;
+        if (entities == null) {
+            return Collections.emptyList();
+        }
+        // TODO if jOOQ supports auto-generated ID when the batch update, modify using it here.
+        // See: https://github.com/jOOQ/jOOQ/issues/3327
+        List<S> result = new ArrayList<>();
+        entities.forEach(entity -> result.add(save(entity)));
+        return result;
     }
 
     /**
@@ -172,7 +255,14 @@ public abstract class BasicJooqRepository<R extends UpdatableRecord<R>, T extend
      */
     @Override
     public void delete(ID id) {
+        Field<?>[] pk = pk();
 
+        if (pk != null) {
+            dsl
+                .deleteFrom(table)
+                .where(equal(pk, id))
+                .execute();
+        }
     }
 
     /**
@@ -180,7 +270,7 @@ public abstract class BasicJooqRepository<R extends UpdatableRecord<R>, T extend
      */
     @Override
     public void delete(E entity) {
-
+        delete(Collections.singletonList(entity));
     }
 
     /**
@@ -188,7 +278,16 @@ public abstract class BasicJooqRepository<R extends UpdatableRecord<R>, T extend
      */
     @Override
     public void delete(Iterable<? extends E> entities) {
+        Field<?>[] pk = pk();
 
+        if (pk != null) {
+            List<ID> ids = new ArrayList<>();
+            entities.forEach(entity -> ids.add(getId(entity)));
+            dsl
+                .deleteFrom(table)
+                .where(in(pk, ids))
+                .execute();
+        }
     }
 
     /**
@@ -196,7 +295,29 @@ public abstract class BasicJooqRepository<R extends UpdatableRecord<R>, T extend
      */
     @Override
     public void deleteInBatch(Iterable<E> entities) {
+        List<R> targets = new ArrayList<>();
+        Field<?>[] pk = pk();
 
+        for (E entity : entities) {
+            R record = dsl.newRecord(table, entity);
+            if (pk != null) {
+                for (Field<?> field : pk) {
+                    // To replace the "changed" flag with true which is same as the fetched record.
+                    record.changed(field, false);
+                }
+                // If a entity property is NULL, but the column is NOT NULL
+                // then we should let the database apply DEFAULT values
+                for (int i = 0; i < record.size(); i++) {
+                    if (record.getValue(i) == null) {
+                        if (!record.field(i).getDataType().nullable()) {
+                            record.changed(i, false);
+                        }
+                    }
+                }
+                targets.add(record);
+            }
+        }
+        dsl.batchDelete(targets).execute();
     }
 
     /**
@@ -205,5 +326,81 @@ public abstract class BasicJooqRepository<R extends UpdatableRecord<R>, T extend
     @Override
     public final void deleteAll() {
         throw new UnsupportedOperationException("deleteAll() is not supported.");
+    }
+
+    private ID getId(E entity) {
+        Assert.notNull(entity);
+        return entity.getId();
+    }
+
+    private Field<?>[] pk() {
+        UniqueKey<R> key = table.getPrimaryKey();
+        return key == null ? null : key.getFieldsArray();
+    }
+
+    @SuppressWarnings("unchecked")
+    private Condition equal(Field<?>[] pk, ID id) {
+        if (pk.length == 1) {
+            return ((Field<Object>) pk[0]).equal(pk[0].getDataType().convert(id));
+        } else {
+            return row(pk).equal((Record) id);
+        }
+    }
+
+    @SuppressWarnings("SuspiciousToArrayCall")
+    private Condition in(Field<?>[] pk, Collection<ID> ids) {
+        if (pk.length == 1) {
+            if (ids.size() == 1) {
+                return equal(pk, ids.iterator().next());
+            } else {
+                return pk[0].in(pk[0].getDataType().convert(ids));
+            }
+        } else {
+            return row(pk).in(ids.toArray(new Record[ids.size()]));
+        }
+    }
+
+    private R fetchById(ID id) {
+        Field<?>[] pk = pk();
+        R record = null;
+
+        if (pk != null) {
+            record = dsl
+                .selectFrom(table)
+                .where(equal(pk, id))
+                .fetchOne();
+        }
+
+        return record == null ? null : record;
+    }
+
+    private SelectQuery<R> getQuery(Sort sort) {
+        SelectQuery<R> query = dsl.selectFrom(table).getQuery();
+        // Do not sort if specified sort condition.
+        if (sort == null) {
+            return query;
+        }
+        for (Sort.Order order : sort) {
+            // It's currently only allowed column name of lowercase.
+            Field<?> field = table.field(name(LOWER_CAMEL.to(LOWER_UNDERSCORE, order.getProperty())));
+            if (field == null) {
+                // TODO Consider later that can't find the field which has sort condition.
+                continue;
+            }
+            SortField<?> sortField;
+            if (order.getDirection() == Sort.Direction.ASC) {
+                sortField = field.asc();
+            } else {
+                sortField = field.desc();
+            }
+            query.addOrderBy(sortField);
+        }
+        return query;
+    }
+
+    private SelectQuery<R> getQuery(Pageable pageable) {
+        SelectQuery<R> query = getQuery(pageable.getSort());
+        query.addLimit(pageable.getOffset(), pageable.getPageSize());
+        return query;
     }
 }

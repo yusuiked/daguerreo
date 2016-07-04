@@ -63,11 +63,14 @@ dependencies {
   compile 'org.springframework.boot:spring-boot-starter-jooq'
   compile 'org.springframework.boot:spring-boot-starter-web'
   compile 'org.springframework.data:spring-data-commons'
+  compile 'com.google.guava:guava:19.0'
   compileOnly 'org.projectlombok:lombok:1.16.6'
   runtime 'com.h2database:h2'
   runtime 'org.flywaydb:flyway-core'
   testCompile 'org.springframework.boot:spring-boot-starter-test'
   testCompile 'org.assertj:assertj-core:3.4.1'
+  testCompile 'org.assertj:assertj-db:1.1.1'
+  testCompile 'com.ninja-squad:DbSetup:2.1.0'
 }
 
 jar {
@@ -100,7 +103,7 @@ eclipse {
 }
 
 flyway {
-  url = 'jdbc:h2:file:/tmp/daguerreo'
+  url = 'jdbc:h2:file:/tmp/daguerreo;DATABASE_TO_UPPER=false'
   user = 'sa'
 }
 
@@ -115,7 +118,7 @@ task jooqGenerate(dependsOn: flywayMigrate) {
     xml.configuration('xmlns': 'http://www.jooq.org/xsd/jooq-codegen-3.7.0.xsd') {
       jdbc() {
         driver 'org.h2.Driver'
-        url 'jdbc:h2:file:/tmp/daguerreo'
+        url 'jdbc:h2:file:/tmp/daguerreo;DATABASE_TO_UPPER=false'
         user 'sa'
         password ''
       }
@@ -154,5 +157,6 @@ task jooqClean(type: Delete) {
 // See: https://github.com/flyway/flyway/issues/775
 afterEvaluate {
   flywayClean.dependsOn -= testClasses
+  flywayInfo.dependsOn = [processResources]
   flywayMigrate.dependsOn = [processResources, processTestResources]
 }
