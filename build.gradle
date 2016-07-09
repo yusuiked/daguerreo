@@ -36,6 +36,7 @@ buildscript {
 
 // TODO will be changes to plugins block notation below.
 apply plugin: 'java'
+apply plugin: 'findbugs'
 apply plugin: 'idea'
 apply plugin: 'eclipse'
 apply plugin: 'spring-boot'
@@ -77,6 +78,10 @@ dependencies {
 jar {
   baseName = 'daguerreo'
   version = '0.0.1-SNAPSHOT'
+}
+
+findbugs {
+  sourceSets = [sourceSets.main]
 }
 
 idea {
