@@ -37,6 +37,7 @@ buildscript {
 // TODO will be changes to plugins block notation below.
 apply plugin: 'java'
 apply plugin: 'findbugs'
+apply plugin: 'checkstyle'
 apply plugin: 'idea'
 apply plugin: 'eclipse'
 apply plugin: 'spring-boot'
@@ -81,6 +82,11 @@ jar {
 }
 
 findbugs {
+  sourceSets = [sourceSets.main]
+}
+
+checkstyle {
+  toolVersion = '7.0'
   sourceSets = [sourceSets.main]
 }
 

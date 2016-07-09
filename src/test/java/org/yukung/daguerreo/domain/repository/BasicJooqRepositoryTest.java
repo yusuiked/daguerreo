@@ -16,6 +16,10 @@
 
 package org.yukung.daguerreo.domain.repository;
 
+import static com.ninja_squad.dbsetup.Operations.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.yukung.daguerreo.infrastructure.Tables.*;
+
 import com.ninja_squad.dbsetup.DbSetup;
 import com.ninja_squad.dbsetup.DbSetupTracker;
 import com.ninja_squad.dbsetup.destination.DataSourceDestination;
@@ -40,15 +44,11 @@ import org.yukung.daguerreo.Application;
 import org.yukung.daguerreo.domain.entity.BookApi;
 import org.yukung.daguerreo.infrastructure.tables.records.BookApiRecord;
 
-import javax.sql.DataSource;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-
-import static com.ninja_squad.dbsetup.Operations.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.yukung.daguerreo.infrastructure.Tables.*;
+import javax.sql.DataSource;
 
 /**
  * Unit tests for {@link BasicJooqRepository}.

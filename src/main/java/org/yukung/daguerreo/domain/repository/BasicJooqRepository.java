@@ -16,6 +16,9 @@
 
 package org.yukung.daguerreo.domain.repository;
 
+import static com.google.common.base.CaseFormat.*;
+import static org.jooq.impl.DSL.*;
+
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -34,7 +37,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
 import org.yukung.daguerreo.domain.entity.Identifiable;
 
-import javax.annotation.PostConstruct;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -42,9 +44,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-
-import static com.google.common.base.CaseFormat.*;
-import static org.jooq.impl.DSL.*;
+import javax.annotation.PostConstruct;
 
 /**
  * Repository base implementation for jOOQ.
@@ -234,8 +234,8 @@ public abstract class BasicJooqRepository<R extends UpdatableRecord<R>, T extend
     /**
      * {@inheritDoc}
      * <p>
-     *     NOTE: Please note that the case of large number of entity to be saved which is becomes very slowly.
-     *     Because in the inside are calling the save() in the loop.
+     * NOTE: Please note that the case of large number of entity to be saved which is becomes very slowly.
+     * Because in the inside are calling the save() in the loop.
      * </p>
      */
     @Override
