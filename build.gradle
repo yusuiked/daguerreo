@@ -52,6 +52,7 @@ sourceSets {
   // TODO runtimeClasspath is also necessary?
   main.compileClasspath += generated.output
   test.compileClasspath += generated.output
+  test.runtimeClasspath += generated.output
 }
 
 repositories {
