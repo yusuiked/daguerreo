@@ -7,13 +7,13 @@ machine:
 dependencies:
   override:
     - ./gradlew dependencies
-
   cache_directories:
     - "~/.gradle"
 
 test:
   override:
-    - ./gradlew test
+    - ./gradlew test jacocoTestReport
   post:
     - mkdir -p $CIRCLE_TEST_REPORTS/junit/
     - find . -type f -regex ".*/test-results/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
+    - cp -R build/reports/jacoco/test/html $CIRCLE_ARTIFACTS/coverage
