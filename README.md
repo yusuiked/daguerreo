@@ -1,6 +1,8 @@
 Daguerreo
 ====
 
+[![Circle CI](https://circleci.com/gh/yukung/daguerreo.svg?style=shield&circle-token=5d835bda4b5700e63adcf9b761b48fa5bd841b7a)](https://circleci.com/gh/yukung/daguerreo)
+
 The personal bookshelf on the web which can be shared.
 
 Description
